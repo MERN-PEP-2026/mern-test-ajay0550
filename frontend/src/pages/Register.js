@@ -27,20 +27,22 @@ function Register() {
   };
 
   return (
-    <div>
-      <h2>Register</h2>
+    <div className="container">
+      <h2>Create Account</h2>
 
       <form onSubmit={handleSubmit}>
         <input
           placeholder="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          required
         />
 
         <input
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          required
         />
 
         <input
@@ -48,12 +50,15 @@ function Register() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
         />
 
         <button type="submit">Register</button>
       </form>
 
-      <Link to="/">Go to Login</Link>
+      <p style={{ textAlign: "center", marginTop: "10px" }}>
+        Already have an account? <Link to="/">Login</Link>
+      </p>
     </div>
   );
 }

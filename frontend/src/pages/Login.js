@@ -18,7 +18,6 @@ function Login() {
       );
 
       localStorage.setItem("token", res.data.token);
-
       navigate("/dashboard");
     } catch (error) {
       alert(error.response?.data?.message || "Login failed");
@@ -26,14 +25,15 @@ function Login() {
   };
 
   return (
-    <div>
-      <h2>Login</h2>
+    <div className="container">
+      <h2>Welcome Back</h2>
 
       <form onSubmit={handleSubmit}>
         <input
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          required
         />
 
         <input
@@ -41,12 +41,15 @@ function Login() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
         />
 
         <button type="submit">Login</button>
       </form>
 
-      <Link to="/register">Go to Register</Link>
+      <p style={{ textAlign: "center", marginTop: "10px" }}>
+        Don't have an account? <Link to="/register">Register</Link>
+      </p>
     </div>
   );
 }

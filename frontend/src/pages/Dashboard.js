@@ -9,7 +9,6 @@ function Dashboard() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  // Redirect if not logged in
   useEffect(() => {
     if (!token) {
       navigate("/");
@@ -32,6 +31,8 @@ function Dashboard() {
   }, []);
 
   const createTask = async () => {
+    if (!title) return;
+
     try {
       await axios.post(
         "http://localhost:5000/api/tasks",
@@ -46,28 +47,20 @@ function Dashboard() {
   };
 
   const deleteTask = async (id) => {
-    try {
-      await axios.delete(
-        `http://localhost:5000/api/tasks/${id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      fetchTasks();
-    } catch (error) {
-      console.log(error);
-    }
+    await axios.delete(
+      `http://localhost:5000/api/tasks/${id}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    fetchTasks();
   };
 
   const completeTask = async (id) => {
-    try {
-      await axios.put(
-        `http://localhost:5000/api/tasks/${id}`,
-        { status: "completed" },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      fetchTasks();
-    } catch (error) {
-      console.log(error);
-    }
+    await axios.put(
+      `http://localhost:5000/api/tasks/${id}`,
+      { status: "completed" },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    fetchTasks();
   };
 
   const logout = () => {
@@ -76,33 +69,36 @@ function Dashboard() {
   };
 
   return (
-    <div>
-      <h2>Dashboard</h2>
+    <div className="dashboard">
+      <button className="logout-btn" onClick={logout}>
+        Logout
+      </button>
 
-      <button onClick={logout}>Logout</button>
+      <h2>My Tasks</h2>
 
-      <div>
-        <input
-          placeholder="New Task"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <button onClick={createTask}>Add Task</button>
-      </div>
+      <input
+        placeholder="Enter new task"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+      <button onClick={createTask}>Add Task</button>
 
       {tasks.map((task) => (
-        <div key={task._id}>
+        <div key={task._id} className="task-card">
           <p>
-            {task.title} - {task.status}
+            {task.title} - <strong>{task.status}</strong>
           </p>
-          {task.status !== "completed" && (
-            <button onClick={() => completeTask(task._id)}>
-              Complete
+
+          <div className="task-actions">
+            {task.status !== "completed" && (
+              <button onClick={() => completeTask(task._id)}>
+                Complete
+              </button>
+            )}
+            <button onClick={() => deleteTask(task._id)}>
+              Delete
             </button>
-          )}
-          <button onClick={() => deleteTask(task._id)}>
-            Delete
-          </button>
+          </div>
         </div>
       ))}
     </div>
