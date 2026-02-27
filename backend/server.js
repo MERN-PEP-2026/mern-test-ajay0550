@@ -3,6 +3,9 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
+const taskRoutes = require("./routes/taskRoutes");
+
+
 
 
 
@@ -22,6 +25,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/tasks", taskRoutes);  
 
 const PORT = process.env.PORT || 5000;
 
