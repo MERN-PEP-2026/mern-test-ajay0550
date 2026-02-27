@@ -5,25 +5,21 @@ import { useNavigate } from "react-router-dom";
 function Dashboard() {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [editingId, setEditingId] = useState(null);
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    if (!token) {
-      navigate("/");
-    }
+    if (!token) navigate("/");
   }, [token, navigate]);
 
   const fetchTasks = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/tasks", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setTasks(res.data);
-    } catch (error) {
-      console.log(error);
-    }
+    const res = await axios.get("http://localhost:5000/api/tasks", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    setTasks(res.data);
   };
 
   useEffect(() => {
@@ -33,17 +29,13 @@ function Dashboard() {
   const createTask = async () => {
     if (!title) return;
 
-    try {
-      await axios.post(
-        "http://localhost:5000/api/tasks",
-        { title },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setTitle("");
-      fetchTasks();
-    } catch (error) {
-      console.log(error);
-    }
+    await axios.post(
+      "http://localhost:5000/api/tasks",
+      { title },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setTitle("");
+    fetchTasks();
   };
 
   const deleteTask = async (id) => {
@@ -54,12 +46,25 @@ function Dashboard() {
     fetchTasks();
   };
 
-  const completeTask = async (id) => {
+  const toggleStatus = async (task) => {
     await axios.put(
-      `http://localhost:5000/api/tasks/${id}`,
-      { status: "completed" },
+      `http://localhost:5000/api/tasks/${task._id}`,
+      {
+        status: task.status === "pending" ? "completed" : "pending"
+      },
       { headers: { Authorization: `Bearer ${token}` } }
     );
+    fetchTasks();
+  };
+
+  const editTask = async (id) => {
+    await axios.put(
+      `http://localhost:5000/api/tasks/${id}`,
+      { title },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setEditingId(null);
+    setTitle("");
     fetchTasks();
   };
 
@@ -68,34 +73,66 @@ function Dashboard() {
     navigate("/");
   };
 
+  const filteredTasks =
+    filter === "all"
+      ? tasks
+      : tasks.filter((task) => task.status === filter);
+
   return (
     <div className="dashboard">
-      <button className="logout-btn" onClick={logout}>
-        Logout
-      </button>
+      <div className="dashboard-header">
+        <h2>My Tasks</h2>
+        <button className="logout-btn" onClick={logout}>
+          Logout
+        </button>
+      </div>
 
-      <h2>My Tasks</h2>
+      <div className="task-input">
+        <input
+          placeholder="Enter task..."
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        {editingId ? (
+          <button onClick={() => editTask(editingId)}>Save</button>
+        ) : (
+          <button onClick={createTask}>Add</button>
+        )}
+      </div>
 
-      <input
-        placeholder="Enter new task"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
-      <button onClick={createTask}>Add Task</button>
+      <div className="filter-buttons">
+        <button onClick={() => setFilter("all")}>All</button>
+        <button onClick={() => setFilter("pending")}>Pending</button>
+        <button onClick={() => setFilter("completed")}>Completed</button>
+      </div>
 
-      {tasks.map((task) => (
+      {filteredTasks.map((task) => (
         <div key={task._id} className="task-card">
           <p>
-            {task.title} - <strong>{task.status}</strong>
+            {task.title} — <strong>{task.status}</strong>
           </p>
 
           <div className="task-actions">
-            {task.status !== "completed" && (
-              <button onClick={() => completeTask(task._id)}>
-                Complete
-              </button>
-            )}
-            <button onClick={() => deleteTask(task._id)}>
+            <button
+              className="complete-btn"
+              onClick={() => toggleStatus(task)}
+            >
+              Toggle Status
+            </button>
+
+            <button
+              onClick={() => {
+                setEditingId(task._id);
+                setTitle(task.title);
+              }}
+            >
+              Edit
+            </button>
+
+            <button
+              className="delete-btn"
+              onClick={() => deleteTask(task._id)}
+            >
               Delete
             </button>
           </div>
